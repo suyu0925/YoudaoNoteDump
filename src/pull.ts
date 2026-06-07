@@ -143,6 +143,10 @@ export class YoudaoNotePull {
       if (buffer.subarray(0, 2).toString("utf-8") === '{"') {
         return FileType.JSON;
       }
+      // 早期有道云笔记 .note 文件为 HTML 格式（含 <div>、<p>、<html> 等标签）
+      if (youdaoFileSuffix === ".note") {
+        return FileType.HTML;
+      }
     }
 
     return FileType.OTHER;
@@ -270,6 +274,8 @@ export class YoudaoNotePull {
       }
     } else if (fileType === FileType.JSON) {
       YoudaoNoteConvert.convertJsonToMarkdown(filePath);
+    } else if (fileType === FileType.HTML) {
+      YoudaoNoteConvert.convertHtmlToMarkdown(filePath);
     }
 
     // 3、迁移文本文件里面的有道云笔记图片（链接）

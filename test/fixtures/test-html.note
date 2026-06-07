@@ -1,0 +1,22 @@
+
+<div>80端口被占用</div>
+<div><br/></div>
+<div>首先使用命令来查询监听端口的进程</div>
+<div>sudo lsof -i -P | grep -i &quot;listen&quot;</div>
+<div>sudo lsof -iTCP:80 | grep LISTEN</div>
+<div><br/></div>
+<div>osx自带apache http server，多半是这家伙了</div>
+<div><br/></div>
+<div><hr/></div>
+<div>sudo /usr/sbin/apachectl stop</div>
+<div>这个可以关闭系统自带的apache</div>
+<div><br/></div>
+<div>如果想彻底去掉它，则可以</div>
+<div>launchctl unload -w /System/Library/LaunchDaemons/org.apache.httpd.plist</div>
+<div>想打开就再load</div>
+<div><br/></div>
+<div><hr/></div>
+<div>注意80端口的监听是需要root权限的</div>
+<div><br/></div>
+<div>可以这样运行来使webstorm获得root权限</div>
+<div>sudo /Applications/WebStrom.app/Contents/MacOS/webstorm</div>

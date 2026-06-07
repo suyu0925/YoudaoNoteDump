@@ -34,4 +34,23 @@ describe("YoudaoNoteConvert", () => {
     const expectedContent = readFileSync(join(FIXTURES_DIR, "test-convert.md"), "utf-8");
     expect(normalizeNewlines(content)).toBe(normalizeNewlines(expectedContent));
   });
+
+  test("HTML (.note) 转换 Markdown 内容", () => {
+    const testHtmlNotePath = join(FIXTURES_DIR, "test-html.note");
+    const htmlContent = readFileSync(testHtmlNotePath, "utf-8");
+    const content = YoudaoNoteConvert.convertHtmlToMarkdownContent(htmlContent);
+    const expectedContent = readFileSync(join(FIXTURES_DIR, "test-html.md"), "utf-8");
+    expect(normalizeNewlines(content)).toBe(normalizeNewlines(expectedContent));
+  });
+
+  test("HTML (.note) 转换不丢失内容", () => {
+    const testHtmlNotePath = join(FIXTURES_DIR, "test-html.note");
+    const htmlContent = readFileSync(testHtmlNotePath, "utf-8");
+    const content = YoudaoNoteConvert.convertHtmlToMarkdownContent(htmlContent);
+    // 确保关键内容不丢失
+    expect(content).toContain("80端口被占用");
+    expect(content).toContain("sudo lsof -i -P");
+    expect(content).toContain("apachectl stop");
+    expect(content).toContain("launchctl unload");
+  });
 });

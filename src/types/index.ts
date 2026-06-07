@@ -14,6 +14,8 @@ export enum FileType {
   XML = 2,
   /** JSON 格式笔记 */
   JSON = 3,
+  /** HTML 格式笔记（早期有道云笔记） */
+  HTML = 4,
 }
 
 /** 文件操作行为 */

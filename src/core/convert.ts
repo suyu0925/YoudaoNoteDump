@@ -409,13 +409,20 @@ export class YoudaoNoteConvert {
    */
   static convertHtmlToMarkdown(filePath: string): void {
     const content = readFileSync(filePath, "utf-8");
-    const turndownService = new TurndownService();
-    const newContent = turndownService.turndown(content);
+    const newContent = YoudaoNoteConvert.convertHtmlToMarkdownContent(content);
 
     const base = filePath.slice(0, filePath.lastIndexOf("."));
     const newFilePath = base + MARKDOWN_SUFFIX;
     renameSync(filePath, newFilePath);
     writeFileSync(newFilePath, newContent, "utf-8");
+  }
+
+  /**
+   * 内部方法：将 HTML 内容转为 Markdown 字符串
+   */
+  static convertHtmlToMarkdownContent(content: string): string {
+    const turndownService = new TurndownService();
+    return turndownService.turndown(content);
   }
 
   /**
