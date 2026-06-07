@@ -78,8 +78,33 @@ main() → init() → pullDirByIdRecursively()
                         ├── getDirInfoById()    获取目录列表
                         ├── judgeType()         判断文件格式
                         ├── getFileAction()     决定新增/更新/跳过
-                        └── pullFile()          下载 + 转换 + 图片迁移
+                        └── pullFile()          下载 + 转换 + Frontmatter + 图片迁移
 ```
+
+### Markdown Frontmatter
+
+所有转换后的 Markdown 文件均在头部插入 YAML Frontmatter 元信息：
+
+```yaml
+---
+title: "笔记标题"
+created: 2008-07-07T00:00:00+08:00
+modified: 2024-06-07T16:12:48+08:00
+source_format: html
+---
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `title` | string | 笔记标题（取文件名去后缀） |
+| `created` | ISO 8601 | 原笔记创建时间（含时区） |
+| `modified` | ISO 8601 | 原笔记最后修改时间（含时区） |
+| `source_format` | enum | 原始格式：`xml` / `json` / `html` / `markdown` |
+
+相关实现：
+- 类型定义：`NoteMeta` 接口 (`src/types/index.ts`)
+- 生成函数：`generateFrontmatter()` (`src/core/utils.ts`)
+- 插入时机：`pullFile()` 中转换完成后、图片迁移前
 
 ### 文件类型识别逻辑
 

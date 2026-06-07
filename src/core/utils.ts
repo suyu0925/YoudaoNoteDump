@@ -3,6 +3,7 @@
  */
 
 import { resolve } from "node:path";
+import type { NoteMeta } from "../types";
 
 /** Markdown 文件后缀 */
 export const MARKDOWN_SUFFIX = ".md";
@@ -43,4 +44,48 @@ export function toPosixPath(filePath: string): string {
  */
 export function urlEncodePath(filePath: string): string {
   return filePath.replace(/ /g, "%20");
+}
+
+/**
+ * 将秒级时间戳转换为 ISO 8601 格式字符串（含时区）
+ * 例如: 1717776000 → "2024-06-07T20:00:00+08:00"
+ */
+export function timestampToIso8601(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  const tzOffset = -date.getTimezoneOffset();
+  const sign = tzOffset >= 0 ? "+" : "-";
+  const hours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+  const minutes = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  const second = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${hours}:${minutes}`;
+}
+
+/**
+ * 生成 YAML Frontmatter 字符串
+ * 输出格式:
+ * ---
+ * title: xxx
+ * created: 2024-06-07T20:00:00+08:00
+ * modified: 2024-06-07T20:00:00+08:00
+ * source_format: xml
+ * ---
+ */
+export function generateFrontmatter(meta: NoteMeta): string {
+  const lines = [
+    "---",
+    `title: "${meta.title.replace(/"/g, '\\"')}"`,
+    `created: ${timestampToIso8601(meta.created)}`,
+    `modified: ${timestampToIso8601(meta.modified)}`,
+    `source_format: ${meta.source_format}`,
+    "---",
+    "",
+  ];
+  return lines.join("\n");
 }

@@ -5,13 +5,13 @@
 import { readFileSync, existsSync, mkdirSync, statSync, unlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { join, extname } from "node:path";
 import { platform } from "node:os";
-import type { Config, DirInfo } from "./types";
+import type { Config, DirInfo, NoteMeta } from "./types";
 import { FileType, FileAction } from "./types";
 import { YoudaoNoteApi } from "./core/api";
 import { YoudaoNoteConvert } from "./core/convert";
 import { ImagePull } from "./core/image";
 import { logger } from "./core/logger";
-import { getScriptDirectory, optimizeFileName, toPosixPath, MARKDOWN_SUFFIX } from "./core/utils";
+import { getScriptDirectory, optimizeFileName, toPosixPath, generateFrontmatter, MARKDOWN_SUFFIX } from "./core/utils";
 
 export class YoudaoNotePull {
   /** 本地文件根目录 */
@@ -232,8 +232,16 @@ export class YoudaoNotePull {
       } catch { /* 文件可能不存在 */ }
     }
 
+    // 构建笔记元信息
+    const meta: NoteMeta | undefined = fileType !== FileType.OTHER ? {
+      title: fileName.replace(youdaoFileSuffix, ""),
+      created: createTime,
+      modified: modifyTime,
+      source_format: this.fileTypeToSourceFormat(fileType),
+    } : undefined;
+
     try {
-      await this.pullFile(fileId, originalFilePath, localFilePath, fileType, youdaoFileSuffix);
+      await this.pullFile(fileId, originalFilePath, localFilePath, fileType, youdaoFileSuffix, meta);
       logger.info(`${fileAction}「${localFilePath}」${tip}`);
 
       // 设置文件时间戳
@@ -246,6 +254,19 @@ export class YoudaoNotePull {
   }
 
   /**
+   * FileType 转换为 source_format 字符串
+   */
+  private fileTypeToSourceFormat(fileType: FileType): NoteMeta["source_format"] {
+    switch (fileType) {
+      case FileType.XML: return "xml";
+      case FileType.JSON: return "json";
+      case FileType.HTML: return "html";
+      case FileType.MARKDOWN: return "markdown";
+      default: return "markdown";
+    }
+  }
+
+  /**
    * 下载文件
    */
   private async pullFile(
@@ -254,6 +275,7 @@ export class YoudaoNotePull {
     localFilePath: string,
     fileType: FileType,
     youdaoFileSuffix: string,
+    meta?: NoteMeta,
   ): Promise<void> {
     // 1、先下载文件
     const response = await this.youdaoNoteApi.getFileById(fileId);
@@ -278,7 +300,14 @@ export class YoudaoNotePull {
       YoudaoNoteConvert.convertHtmlToMarkdown(filePath);
     }
 
-    // 3、迁移文本文件里面的有道云笔记图片（链接）
+    // 3、在转换后的 Markdown 文件头部插入 Frontmatter
+    if (meta && fileType !== FileType.OTHER) {
+      const frontmatter = generateFrontmatter(meta);
+      const existingContent = readFileSync(localFilePath, "utf-8");
+      writeFileSync(localFilePath, frontmatter + existingContent, "utf-8");
+    }
+
+    // 4、迁移文本文件里面的有道云笔记图片（链接）
     if (fileType !== FileType.OTHER || youdaoFileSuffix === MARKDOWN_SUFFIX) {
       const imagePull = new ImagePull(
         this.youdaoNoteApi,

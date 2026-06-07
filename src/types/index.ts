@@ -82,6 +82,20 @@ export interface RootDirInfo {
   fileEntry: FileEntry;
 }
 
+// ==================== 笔记元信息 ====================
+
+/** 笔记元信息（写入 Markdown Frontmatter） */
+export interface NoteMeta {
+  /** 笔记标题（文件名去后缀） */
+  title: string;
+  /** 创建时间（秒级时间戳） */
+  created: number;
+  /** 修改时间（秒级时间戳） */
+  modified: number;
+  /** 原始格式 */
+  source_format: "xml" | "json" | "html" | "markdown";
+}
+
 // ==================== SM.MS API ====================
 
 /** SM.MS 上传成功响应 */
