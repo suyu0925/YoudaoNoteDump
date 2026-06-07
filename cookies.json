@@ -1,0 +1,7 @@
+{
+  "cookies": [
+    ["YNOTE_CSTK", "your_cookie_value", ".note.youdao.com", "/"],
+    ["YNOTE_LOGIN", "your_cookie_value", ".note.youdao.com", "/"],
+    ["YNOTE_SESS", "your_cookie_value", ".note.youdao.com", "/"]
+  ]
+}
